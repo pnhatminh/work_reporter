@@ -95,7 +95,7 @@ pub fn check_out(sessions: &mut Sessions) {
     };
 
     match sessions.update(&name) {
-        Ok(x) => println!("{}", x),
-        Err(x) => println!("{}", x),
+        Ok(x) => x.display(),
+        Err(x) => x.display(),
     }
 }

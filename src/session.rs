@@ -1,6 +1,28 @@
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
 
+#[derive(Debug)]
+pub enum Exception {
+    CheckoutOk,
+    UserNotFound,
+    NoUnfinishedSession,
+    // UnfinishedSessionExisted,
+}
+
+impl Exception {
+    pub fn display(&self) {
+        match self {
+            Exception::CheckoutOk => println!("Checkout ok"),
+            Exception::UserNotFound => println!("User not found"),
+            Exception::NoUnfinishedSession => {
+                println!("User cannot check out as there is no unfinished session")
+            } // Exception::UnfinishedSessionExisted => {
+              //     println!("User cannot check in as there is one unfinished session")
+              // }
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct SingleSession {
     pub username: String,
@@ -47,7 +69,7 @@ impl Sessions {
         }
     }
 
-    pub fn update(&mut self, name: &str) -> Result<String, String> {
+    pub fn update(&mut self, name: &str) -> Result<Exception, Exception> {
         if let Some(sessions) = self.inner.get_mut(name) {
             for session in sessions {
                 if session.total_working_hour.is_none() && session.checkout_at.is_none() {
@@ -59,14 +81,14 @@ impl Sessions {
                     let total_working_hour = duration.as_millis() as i32 / 36000000;
                     session.checkout_at = Some(checkout_at);
                     session.total_working_hour = Some(total_working_hour);
-                    return Ok("Checked out".to_owned());
+                    return Ok(Exception::CheckoutOk);
                 } else {
                     continue;
                 }
             }
-            return Err("There is no unfinished to check out for this user".to_owned());
+            return Err(Exception::NoUnfinishedSession);
         } else {
-            Err("Name not existed".to_owned())
+            Err(Exception::UserNotFound)
         }
     }
 }
