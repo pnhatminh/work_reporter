@@ -46,4 +46,27 @@ impl Sessions {
             Some(values) => values.to_vec(),
         }
     }
+
+    pub fn update(&mut self, name: &str) -> Result<String, String> {
+        if let Some(sessions) = self.inner.get_mut(name) {
+            for session in sessions {
+                if session.total_working_hour.is_none() && session.checkout_at.is_none() {
+                    let checkout_at = chrono::offset::Utc::now();
+                    let duration = checkout_at
+                        .signed_duration_since(session.checkin_at)
+                        .to_std()
+                        .unwrap();
+                    let total_working_hour = duration.as_millis() as i32 / 36000000;
+                    session.checkout_at = Some(checkout_at);
+                    session.total_working_hour = Some(total_working_hour);
+                    return Ok("Checked out".to_owned());
+                } else {
+                    continue;
+                }
+            }
+            return Err("There is no unfinished to check out for this user".to_owned());
+        } else {
+            Err("Name not existed".to_owned())
+        }
+    }
 }

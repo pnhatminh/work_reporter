@@ -44,22 +44,35 @@ pub fn get_input() -> Option<String> {
 }
 
 pub fn check_in(sessions: &mut Sessions) {
-    println!("Please enter username: ");
+    println!("Please enter username to checkin: ");
     let name = match get_input() {
         Some(name) => name,
         None => return,
     };
 
-    let checkin_at = chrono::offset::Utc::now();
+    let personal_sessions = sessions.get_by_name(&name);
+    let not_checked_out_session = personal_sessions
+        .into_iter()
+        .filter(|x| x.checkout_at.is_none() && x.total_working_hour.is_none())
+        .clone()
+        .collect::<Vec<SingleSession>>();
+    if not_checked_out_session.len() == 1 {
+        println!(
+            "You cannot check in, as there is an already session that is not yet checked out."
+        );
+        return;
+    } else {
+        let checkin_at = chrono::offset::Utc::now();
 
-    let session = SingleSession {
-        username: name,
-        checkin_at: checkin_at,
-        checkout_at: None,
-        total_working_hour: None,
-    };
-    sessions.add(session);
-    println!("Session added at {:?}", checkin_at);
+        let session = SingleSession {
+            username: name,
+            checkin_at,
+            checkout_at: None,
+            total_working_hour: None,
+        };
+        sessions.add(session);
+        println!("Checked in at {:?}", checkin_at);
+    }
 }
 
 pub fn view_all(sessions: &Sessions) {
@@ -70,5 +83,19 @@ pub fn view_all(sessions: &Sessions) {
     };
     for elem in output {
         println!("{:?}", elem);
+    }
+}
+
+pub fn check_out(sessions: &mut Sessions) {
+    println!("Please enter username to check out: ");
+
+    let name = match get_input() {
+        Some(name) => name,
+        None => return,
+    };
+
+    match sessions.update(&name) {
+        Ok(x) => println!("{}", x),
+        Err(x) => println!("{}", x),
     }
 }
