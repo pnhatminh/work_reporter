@@ -3,10 +3,10 @@ use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct SingleSession {
-    username: String,
-    checkin_at: DateTime<Utc>,
-    checkout_at: Option<DateTime<Utc>>,
-    total_working_hour: Option<i32>,
+    pub username: String,
+    pub checkin_at: DateTime<Utc>,
+    pub checkout_at: Option<DateTime<Utc>>,
+    pub total_working_hour: Option<i32>,
 }
 
 pub struct Sessions {
@@ -20,7 +20,7 @@ impl Sessions {
         }
     }
 
-    fn add(&mut self, session: SingleSession) {
+    pub fn add(&mut self, session: SingleSession) {
         let username = session.username.to_string();
         match self.inner.get_mut(&username) {
             None => {
@@ -31,7 +31,7 @@ impl Sessions {
         }
     }
 
-    fn get_all(&mut self, name: &str) -> Option<&Vec<SingleSession>> {
+    pub fn get_all(&mut self, name: &str) -> Option<&Vec<SingleSession>> {
         self.inner.get(name)
     }
 }

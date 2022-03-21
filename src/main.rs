@@ -1,33 +1,23 @@
+use session::Sessions;
+
 mod menu;
-use std::io;
+mod session;
 
 fn main() {
-    run_CLI();
+    run_cli();
 }
 
-fn run_CLI() -> Option<()> {
+fn run_cli() -> Option<()> {
+    let mut sessions = Sessions::new();
     loop {
         menu::MainMenu::show();
-        let input = get_input()?;
+        let input = menu::get_input()?;
         match menu::MainMenu::from_str(input.as_str()) {
-            Some(menu::MainMenu::CheckIn) => println!("Check In"),
+            Some(menu::MainMenu::CheckIn) => menu::check_in(&mut sessions),
             Some(menu::MainMenu::CheckOut) => println!("Check Out"),
             Some(menu::MainMenu::ViewAll) => println!("View All"),
             None => break,
         }
     }
     None
-}
-
-fn get_input() -> Option<String> {
-    let mut buffer = String::new();
-    while io::stdin().read_line(&mut buffer).is_err() {
-        println!("Please enter your data again");
-    }
-    let input = buffer.trim().to_owned();
-    if &input == "" {
-        None
-    } else {
-        Some(input)
-    }
 }

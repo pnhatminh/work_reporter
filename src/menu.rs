@@ -1,3 +1,7 @@
+use std::io;
+
+use crate::session::{Sessions, SingleSession};
+
 pub enum MainMenu {
     CheckIn,
     CheckOut,
@@ -26,4 +30,36 @@ impl MainMenu {
         println!("");
         println!("Enter selection: ");
     }
+}
+
+pub fn get_input() -> Option<String> {
+    let mut buffer = String::new();
+    while io::stdin().read_line(&mut buffer).is_err() {
+        println!("Please enter your data again");
+    }
+    let input = buffer.trim().to_owned();
+    if &input == "" {
+        None
+    } else {
+        Some(input)
+    }
+}
+
+pub fn check_in(sessions: &mut Sessions) {
+    println!("Please enter username: ");
+    let name = match get_input() {
+        Some(name) => name,
+        None => return,
+    };
+
+    let checkin_at = chrono::offset::Utc::now();
+
+    let session = SingleSession {
+        username: name,
+        checkin_at: checkin_at,
+        checkout_at: None,
+        total_working_hour: None,
+    };
+    sessions.add(session);
+    println!("Session added at {:?}", checkin_at);
 }
