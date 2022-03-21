@@ -6,8 +6,6 @@ pub enum MainMenu {
     CheckIn,
     CheckOut,
     ViewAll,
-    // ViewOne,
-    // ViewUser,
     // Delete,
 }
 
@@ -62,4 +60,15 @@ pub fn check_in(sessions: &mut Sessions) {
     };
     sessions.add(session);
     println!("Session added at {:?}", checkin_at);
+}
+
+pub fn view_all(sessions: &Sessions) {
+    println!("Please enter username. Empty username return all sessions: ");
+    let output = match get_input() {
+        Some(name) => sessions.get_by_name(&name),
+        None => sessions.get_all(),
+    };
+    for elem in output {
+        println!("{:?}", elem);
+    }
 }

@@ -14,8 +14,8 @@ fn run_cli() -> Option<()> {
         let input = menu::get_input()?;
         match menu::MainMenu::from_str(input.as_str()) {
             Some(menu::MainMenu::CheckIn) => menu::check_in(&mut sessions),
-            Some(menu::MainMenu::CheckOut) => println!("Check Out"),
-            Some(menu::MainMenu::ViewAll) => println!("View All"),
+            Some(menu::MainMenu::CheckOut) => println!("CheckOut"),
+            Some(menu::MainMenu::ViewAll) => menu::view_all(&sessions),
             None => break,
         }
     }

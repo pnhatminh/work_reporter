@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct SingleSession {
     pub username: String,
     pub checkin_at: DateTime<Utc>,
@@ -31,7 +31,19 @@ impl Sessions {
         }
     }
 
-    pub fn get_all(&mut self, name: &str) -> Option<&Vec<SingleSession>> {
-        self.inner.get(name)
+    pub fn get_all(&self) -> Vec<SingleSession> {
+        self.inner
+            .values()
+            .into_iter()
+            .flatten()
+            .cloned()
+            .collect::<Vec<SingleSession>>()
+    }
+
+    pub fn get_by_name(&self, name: &str) -> Vec<SingleSession> {
+        match self.inner.get(name) {
+            None => vec![],
+            Some(values) => values.to_vec(),
+        }
     }
 }
