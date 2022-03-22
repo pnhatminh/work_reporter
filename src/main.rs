@@ -17,6 +17,7 @@ fn run_cli() -> Option<()> {
             Some(menu::MainMenu::CheckOut) => menu::check_out(&mut sessions),
             Some(menu::MainMenu::ViewAll) => menu::view_all(&sessions),
             Some(menu::MainMenu::ExportCSV) => menu::export_csv(&sessions),
+            Some(menu::MainMenu::ImportCSV) => menu::import_csv(&mut sessions),
             None => break,
         }
     }

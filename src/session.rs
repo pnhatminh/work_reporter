@@ -6,6 +6,8 @@ pub enum Exception {
     CheckoutOk,
     UserNotFound,
     NoUnfinishedSession,
+    SessionNotExisted,
+    SessionExisted,
     // UnfinishedSessionExisted,
 }
 
@@ -16,9 +18,13 @@ impl Exception {
             Exception::UserNotFound => println!("User not found"),
             Exception::NoUnfinishedSession => {
                 println!("User cannot check out as there is no unfinished session")
-            } // Exception::UnfinishedSessionExisted => {
-              //     println!("User cannot check in as there is one unfinished session")
-              // }
+            }
+            Exception::SessionExisted => {
+                println!("Session found")
+            }
+            Exception::SessionNotExisted => {
+                println!("Session not found")
+            }
         }
     }
 }
@@ -114,6 +120,20 @@ impl Sessions {
             return Err(Exception::NoUnfinishedSession);
         } else {
             Err(Exception::UserNotFound)
+        }
+    }
+
+    pub fn check_exist(&mut self, session: &SingleSession) -> Result<Exception, Exception> {
+        let username = session.username.to_string();
+        match self.inner.get(&username) {
+            Some(list_of_sessions) => {
+                if list_of_sessions.contains(&session) {
+                    return Ok(Exception::SessionExisted);
+                } else {
+                    return Err(Exception::SessionNotExisted);
+                }
+            }
+            None => return Err(Exception::UserNotFound),
         }
     }
 }

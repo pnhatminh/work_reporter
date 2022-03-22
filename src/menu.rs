@@ -1,6 +1,8 @@
-use std::fs::OpenOptions;
+use chrono::{DateTime, Utc};
+use std::fs::{File, OpenOptions};
 use std::io;
 use std::io::prelude::*;
+use std::io::{BufRead, BufReader};
 
 use crate::session::{Sessions, SingleSession};
 
@@ -9,6 +11,7 @@ pub enum MainMenu {
     CheckOut,
     ViewAll,
     ExportCSV,
+    ImportCSV,
     // Delete,
 }
 
@@ -19,6 +22,7 @@ impl MainMenu {
             "2" => Some(Self::CheckOut),
             "3" => Some(Self::ViewAll),
             "4" => Some(Self::ExportCSV),
+            "5" => Some(Self::ImportCSV),
             _ => None,
         }
     }
@@ -30,6 +34,7 @@ impl MainMenu {
         println!("2. Check out");
         println!("3. View All");
         println!("4. Export CSV");
+        println!("5. Import CSV");
         println!("");
         println!("Enter selection: ");
     }
@@ -126,4 +131,67 @@ pub fn export_csv(sessions: &Sessions) {
         }
     }
     println!("Exported Ok");
+}
+
+pub fn import_csv(sessions: &mut Sessions) {
+    println!("Please enter file path: ");
+    let filepath = match get_input() {
+        Some(name) => name,
+        None => return,
+    };
+    let file = match File::open(filepath) {
+        Ok(file) => file,
+        Err(_) => {
+            println!("file not found");
+            return;
+        }
+    };
+    let reader = BufReader::new(file);
+    for line in reader.lines() {
+        let line = line.unwrap();
+        let split = line.split(",");
+        let info = split.collect::<Vec<&str>>();
+        if info[0] == "Username" {
+            continue;
+        } else {
+            let checkin_at = match DateTime::parse_from_rfc3339(info[1]) {
+                Ok(value) => value.with_timezone(&Utc),
+                Err(_) => {
+                    println!("Error parsing checkin_at");
+                    continue;
+                }
+            };
+
+            let checkout_at = match info[2] {
+                "None" => None,
+                value => match DateTime::parse_from_rfc3339(value) {
+                    Ok(value) => Some(value.with_timezone(&Utc)),
+                    Err(_) => {
+                        println!("Error parsing checkout_at");
+                        continue;
+                    }
+                },
+            };
+
+            let total_working_hour = match info[3] {
+                "None" => None,
+                value => match value.parse::<i32>() {
+                    Ok(value) => Some(value),
+                    Err(_) => None,
+                },
+            };
+
+            let new_session = SingleSession {
+                username: info[0].to_owned(),
+                checkin_at,
+                checkout_at,
+                total_working_hour,
+            };
+
+            match sessions.check_exist(&new_session) {
+                Ok(exception) => exception.display(),
+                Err(_) => sessions.add(new_session),
+            }
+        }
+    }
 }
