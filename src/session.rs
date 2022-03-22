@@ -31,6 +31,35 @@ pub struct SingleSession {
     pub total_working_hour: Option<i32>,
 }
 
+impl SingleSession {
+    pub fn line_display(&self) -> String {
+        let mut result = (&self.username).to_owned();
+        let checkout_at_value;
+        let checkout_at = match self.checkout_at {
+            Some(ref value) => {
+                checkout_at_value = value.to_rfc3339();
+                &checkout_at_value
+            }
+            None => "None",
+        };
+        let total_working_hour_value;
+        let total_working_hour: &str = match self.total_working_hour {
+            Some(ref value) => {
+                total_working_hour_value = value.to_string();
+                &total_working_hour_value
+            }
+            None => "None",
+        };
+        result.push(',');
+        result.push_str(&self.checkin_at.to_rfc3339());
+        result.push(',');
+        result.push_str(checkout_at);
+        result.push(',');
+        result.push_str(&total_working_hour);
+        result
+    }
+}
+
 pub struct Sessions {
     inner: HashMap<String, Vec<SingleSession>>,
 }

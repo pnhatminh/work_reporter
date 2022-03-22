@@ -1,4 +1,6 @@
+use std::fs::OpenOptions;
 use std::io;
+use std::io::prelude::*;
 
 use crate::session::{Sessions, SingleSession};
 
@@ -6,6 +8,7 @@ pub enum MainMenu {
     CheckIn,
     CheckOut,
     ViewAll,
+    ExportCSV,
     // Delete,
 }
 
@@ -15,6 +18,7 @@ impl MainMenu {
             "1" => Some(Self::CheckIn),
             "2" => Some(Self::CheckOut),
             "3" => Some(Self::ViewAll),
+            "4" => Some(Self::ExportCSV),
             _ => None,
         }
     }
@@ -25,6 +29,7 @@ impl MainMenu {
         println!("1. Check in");
         println!("2. Check out");
         println!("3. View All");
+        println!("4. Export CSV");
         println!("");
         println!("Enter selection: ");
     }
@@ -98,4 +103,27 @@ pub fn check_out(sessions: &mut Sessions) {
         Ok(x) => x.display(),
         Err(x) => x.display(),
     }
+}
+
+pub fn export_csv(sessions: &Sessions) {
+    println!("Please enter username. Empty username return all sessions: ");
+    let output = match get_input() {
+        Some(name) => sessions.get_by_name(&name),
+        None => sessions.get_all(),
+    };
+    let mut file = OpenOptions::new()
+        .create_new(true)
+        .write(true)
+        .append(true)
+        .open("exported.csv")
+        .unwrap();
+    if let Err(e) = writeln!(file, "Username,CheckInAt,CheckOutAt,TotalWorkingHour") {
+        eprintln!("Couldn't write header to file: {}", e);
+    }
+    for elem in output {
+        if let Err(e) = writeln!(file, "{}", elem.line_display()) {
+            eprintln!("Couldn't write to file: {}", e);
+        }
+    }
+    println!("Exported Ok");
 }
